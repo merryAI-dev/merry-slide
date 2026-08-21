@@ -1,0 +1,11 @@
+vendor/
+node_modules/
+*.log
+.DS_Store
+page_*.png
+*-deck.pptx
+merry-slide-deck.pptx
+
+__pycache__/
+*.pyc
+.gstack/

@@ -1,0 +1,32 @@
+# 스모크 테스트: 추출 → 브랜드 주입 → 빌드 → OOXML 검증.
+# LibreOffice 같은 외부 도구 없이 node + python3 표준 라이브러리로만 돈다.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 문법 검사
+        run: |
+          for f in components/*.mjs scripts/*.mjs tests/*.mjs; do
+            node --check "$f"
+          done
+
+      - name: 의존성 설치
+        run: bash scripts/setup-deps.sh
+
+      - name: 스모크 테스트
+        run: node tests/smoke.mjs

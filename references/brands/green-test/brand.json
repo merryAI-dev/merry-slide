@@ -1,0 +1,148 @@
+{
+  "brand": "green-test",
+  "source": "green-ref.pptx",
+  "slides": 3,
+  "canvas": {
+    "w": 13.333,
+    "h": 7.5,
+    "ratio": 1.778
+  },
+  "font": {
+    "family": "Noto Sans KR",
+    "observed": [
+      {
+        "name": "Noto Sans KR",
+        "count": 29
+      }
+    ],
+    "sizes": [
+      {
+        "pt": 11.0,
+        "count": 12
+      },
+      {
+        "pt": 20.0,
+        "count": 3
+      },
+      {
+        "pt": 9.0,
+        "count": 3
+      },
+      {
+        "pt": 15.0,
+        "count": 3
+      },
+      {
+        "pt": 40.0,
+        "count": 3
+      },
+      {
+        "pt": 13.0,
+        "count": 3
+      },
+      {
+        "pt": 12.0,
+        "count": 2
+      }
+    ]
+  },
+  "palette": {
+    "text": [
+      {
+        "hex": "000000",
+        "count": 17
+      },
+      {
+        "hex": "1B5E20",
+        "count": 6
+      },
+      {
+        "hex": "424242",
+        "count": 6
+      }
+    ],
+    "fill": [
+      {
+        "hex": "1B5E20",
+        "count": 3
+      },
+      {
+        "hex": "F1F8E9",
+        "count": 1
+      },
+      {
+        "hex": "FFFFFF",
+        "count": 1
+      }
+    ]
+  },
+  "line": {
+    "widths_pt": [
+      {
+        "pt": 1.5,
+        "count": 3
+      },
+      {
+        "pt": 1.0,
+        "count": 2
+      }
+    ]
+  },
+  "geometry": [
+    {
+      "preset": "rect",
+      "count": 20
+    },
+    {
+      "preset": "line",
+      "count": 3
+    },
+    {
+      "preset": "roundRect",
+      "count": 2
+    }
+  ],
+  "header": {
+    "rule": {
+      "x": 0.8,
+      "y": 1.1,
+      "w": 11.7,
+      "slides": 3
+    },
+    "repeated_boxes": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "w": 0.35,
+        "slides": 3
+      },
+      {
+        "x": 0.8,
+        "y": 0.35,
+        "w": 4.0,
+        "slides": 3
+      },
+      {
+        "x": 0.8,
+        "y": 1.1,
+        "w": 11.7,
+        "slides": 3
+      }
+    ],
+    "band_h": 0.37
+  },
+  "grid": {
+    "full": {
+      "x": 0.8,
+      "w": 11.7
+    },
+    "bottom": 6.4,
+    "contentTop": 1.31
+  },
+  "table": {
+    "headFill": "8BC34A",
+    "headH": 0.32,
+    "bodyH": 0.55,
+    "samples": 1
+  }
+}
