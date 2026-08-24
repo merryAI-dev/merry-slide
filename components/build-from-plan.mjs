@@ -421,7 +421,7 @@ function tableSlide(pptx, slide, c, PT, CT, slideNo) {
 function diagramSlide(pptx, slide, c, PT, CT, slideNo) {
   const flow = c.flow || [];
   pill(pptx, slide, c.pill, L.full.x, PT, L.full.w);
-  const sp = splitBody(CT, bandWanted(figuresOf(c)) ? L.natural.flow : Number.POSITIVE_INFINITY, Boolean(c.note));
+  const sp = splitBody(CT, bandWanted(figuresOf(c)) ? L.natural.flow : L.natural.flowMax, Boolean(c.note));
   const flowH = sp.h;
 
   if (flow.length) {

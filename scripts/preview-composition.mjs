@@ -20,13 +20,13 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { T } from '../components/base.mjs';
+import { T } from '../components/mysc-proposal.mjs';
 import { startRun, endRun } from './worklog.mjs';
 
 const DEFAULT_OUT = 'slide-composition-preview.html';
 const SELF_DIR = path.dirname(fileURLToPath(import.meta.url));
 
-/** 장표 형식. 실측 레퍼런스 덱 32장을 분류해서 나온 유형이다. */
+/** 장표 형식. MYSC 레퍼런스 덱 32장을 분류해서 나온 유형이다. */
 const FORMATS = [
   { name: '표지', desc: '덱의 첫 장. 제목과 발행 주체' },
   { name: '목차', desc: '전체 장 구성을 한눈에' },
@@ -63,7 +63,7 @@ function usage() {
 
 function parseArgs(argv) {
   const args = { plan: 'slide_plan.json', out: DEFAULT_OUT, title: '', leadMin: 150, leadMax: 200,
-                 images: '', serve: false, port: 18888, pptx: '' };
+                 images: '', serve: false, port: 18888, pptx: '', lan: false };
   for (let i = 0; i < argv.length; i += 1) {
     const key = argv[i];
     const value = argv[i + 1];
@@ -83,6 +83,8 @@ function parseArgs(argv) {
       args.images = value || ''; i += 1;
     } else if (key === '--brand') {
       args.brand = value || ''; i += 1;
+    } else if (key === '--lan') {
+      args.lan = true;
     } else if (key === '--serve') {
       args.serve = true;
     } else if (key === '--port') {
@@ -456,7 +458,7 @@ const FORMATS = ${JSON.stringify(FORMATS)};
 const GALLERY = ${JSON.stringify(gallery)};
 /* 형식 미리보기 캐시. 내용이 그대로면 8종을 다시 그리지 않는다. */
 const miniCache = { sig: null, html: '' };
-/* 배치 격자는 components/base.mjs의 토큰에서 온다. 빌더와 같은 값이다. */
+/* 배치 격자는 components/mysc-proposal.mjs의 토큰에서 온다. 빌더와 같은 값이다. */
 const G = ${JSON.stringify(T.grid)};
 let slides = ${JSON.stringify(slides)};
 let cur = 0;
@@ -691,7 +693,7 @@ function renderSlide(s, i) {
       '<h2>' + lines(s.title) + '</h2>' +
       '<div class="csub">' + lines(c.subtitle) + '</div>' +
       '<div class="cent">' + esc(c.entity || '') + '</div>' +
-      '';
+      '<div class="clogo">MYSC</div>';
   }
   if (f === '목차') {
     return '<h2>' + esc(s.title || '목차') + '</h2>' +
@@ -743,7 +745,7 @@ function renderSlide(s, i) {
     const boxes = fl.map((b, k) =>
       (k ? '<span class="farrow">›</span>' : '') +
       '<div class="fbox"><b>' + esc(b.head) + '</b><p>' + lines(b.body) + '</p></div>').join('');
-    const sp = splitBody(CT, G.natural.flow, !!c.note);
+    const sp = splitBody(CT, bandWanted(figuresOf(c)) ? G.natural.flow : G.natural.flowMax, !!c.note);
     const flowH = sp.h;
     inner += pillDiv(c.pill, 'left:.649in;top:' + PT + 'in;width:10.37in') +
       '<div class="flow" style="left:.649in;top:' + CT + 'in;width:10.37in;height:' + flowH + 'in">' + boxes + '</div>' +
@@ -1386,10 +1388,21 @@ function serve(html, args, outPath, gallery = []) {
       });
       return;
     }
+    // 검토 화면은 루트에서만 준다. 그 외 경로에 200을 주면 스캐너가 파일을
+    // 캐내려는 시도에도 정상 응답처럼 보인다. 실제 파일 유출은 없지만 위생상 404.
+    const reqPath = (req.url || '/').split('?')[0];
+    if (reqPath !== '/' && reqPath !== '/index.html') {
+      res.writeHead(404, { 'content-type': 'text/plain' });
+      res.end('not found');
+      return;
+    }
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
     res.end(html);
-  }).listen(args.port, () => {
+  }).listen(args.port, args.lan ? '0.0.0.0' : '127.0.0.1', () => {
     console.log(`검토 화면: http://localhost:${args.port}  (PPTX 생성을 누르면 ${pptxPath} 로 바로 만들어집니다)`);
+    if (args.lan) {
+      console.log('주의: --lan 모드입니다. 같은 네트워크의 다른 기기에서도 이 화면과 사진에 접근할 수 있습니다.');
+    }
   });
 
   // 검토 중에 서버가 내려가면 작업하던 내용을 잃는다. 어떤 예외도 프로세스를

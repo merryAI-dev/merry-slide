@@ -359,6 +359,44 @@ function gitSetup(apply) {
   }
 }
 
+/**
+ * 개인정보가 담긴 산출물·기록을 파기한다. (PIA 3.5 / 4.7)
+ *
+ * 사진이 박힌 확정 JSON·미리보기 HTML·덱, 그리고 발주처·사업 정보가 담긴
+ * 작업 기록이 대상이다. 복구 가능한 이름 변경이 아니라 실제 삭제다.
+ * 무엇을 지우는지 먼저 보여주고, --yes가 있어야 실행한다.
+ */
+function purge(confirmed) {
+  const home = os.homedir();
+  const targets = [];
+  const add = (p) => { if (fs.existsSync(p)) targets.push(p); };
+
+  // 산출물: 확정 JSON은 사진을 base64로 품고 있어 개인정보 덩어리다
+  for (const dir of [process.cwd(), path.join(home, 'Downloads'), path.join(home, 'merry-demo')]) {
+    if (!fs.existsSync(dir)) continue;
+    for (const n of fs.readdirSync(dir)) {
+      if (/slide_plan\.confirmed.*\.json$|^preview.*\.html$|\.pptx$/.test(n)) add(path.join(dir, n));
+    }
+  }
+  // 기록: 원본과 저장소 사본 양쪽
+  for (const d of [STORE_DIR, REPO_LOG_DIR]) {
+    if (!fs.existsSync(d)) continue;
+    for (const n of fs.readdirSync(d)) if (/\.md$|sync-errors\.log$/.test(n)) add(path.join(d, n));
+  }
+
+  if (!targets.length) { console.log('파기할 대상이 없습니다.'); return; }
+  console.log('다음을 파기합니다:');
+  targets.forEach((t) => console.log(`  - ${t}`));
+  if (!confirmed) {
+    console.log('\n되돌릴 수 없습니다. 실행하려면 --yes 를 붙이세요.');
+    console.log('공개 저장소에 이미 커밋된 기록은 로컬 삭제만으로 지워지지 않습니다(히스토리에 남음).');
+    return;
+  }
+  let n = 0;
+  for (const t of targets) { try { fs.rmSync(t); n += 1; } catch { /* 이미 없음 */ } }
+  console.log(`\n${n}개 파기 완료.`);
+}
+
 function cli() {
   const [cmd, ...rest] = process.argv.slice(2);
   if (cmd === 'note') {
@@ -373,6 +411,8 @@ function cli() {
     gitCommit(rest.includes('--push'), rest.includes('--quiet'));
   } else if (cmd === 'export') {
     exportAll(rest.find((r) => !r.startsWith('--')));
+  } else if (cmd === 'purge') {
+    purge(rest.includes('--yes'));
   } else if (cmd === 'setup') {
     gitSetup(rest.includes('--apply'));
   } else if (cmd === 'autocommit') {
@@ -392,6 +432,7 @@ function cli() {
   node scripts/worklog.mjs export [파일경로]  전체 기록을 파일 하나로 묶는다
   node scripts/worklog.mjs autocommit on|off 자동 커밋을 켜고 끈다
   node scripts/worklog.mjs commit [--push]   기록을 지금 커밋한다
+  node scripts/worklog.mjs purge [--yes]     개인정보가 담긴 산출물·기록을 파기한다
 
 기록 위치: ${logDir()}  (클론을 지워도 남습니다)
 자동 커밋: ${autoCommitOn() ? '켜짐' : '꺼짐'}

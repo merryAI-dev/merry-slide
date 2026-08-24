@@ -107,7 +107,9 @@ export const T = {
     full: { x: 0.649, w: 10.37 },
     table: { headH: 0.275, rowH: 0.44 },  // 헤더는 고정, 본문 행만 늘어난다
     // 형식별 콘텐츠의 자연 높이. 남는 공간은 하단 이미지 띠가 된다.
-    natural: { bulletRow: 0.36, bulletPad: 0.12, flow: 2.4, steps: 1.5, stats: 1.35, chart: 3.4 },
+    natural: { bulletRow: 0.36, bulletPad: 0.12, flow: 2.4, steps: 1.5, stats: 1.35, chart: 3.4,
+               // 이미지 띠가 없을 때 flow 박스가 바닥까지 늘어나 속이 비는 것을 막는 상한
+               flowMax: 3.3 },
     // 하단 이미지 띠를 나눌 때 칸 사이 간격. 위 도형의 간격과 맞춘다.
     rowGap: { table: 0.08, flow: 0.16, steps: 0.07, stats: 0.2 },
   },
