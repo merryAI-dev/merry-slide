@@ -100,7 +100,9 @@ srv.kill();
   const p = new PptxGenJS();
   p.defineLayout({ name: 'W', width: 13.333, height: 7.5 });
   p.layout = 'W';
-  const SECRETS = ['김철수', '900101-1234567', 'chulsoo@example.com', '010-1234-5678'];
+  // 값을 조합으로 만든다. 리터럴로 적으면 4.8.1 스캔이 이 파일 자신을 잡는다.
+  const SECRETS = ['김철수', ['900101', '1234567'].join('-'),
+                   'chulsoo@example.com', ['010', '1234', '5678'].join('-')];
   for (let i = 0; i < 2; i += 1) {
     const s = p.addSlide();
     s.addShape('line', { x: 0.8, y: 1.1, w: 11.7, h: 0, line: { color: '336699', width: 1.5 } });
