@@ -20,7 +20,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { T } from '../components/mysc-proposal.mjs';
+import { T } from '../components/base.mjs';
 import { startRun, endRun } from './worklog.mjs';
 
 const DEFAULT_OUT = 'slide-composition-preview.html';
@@ -458,7 +458,7 @@ const FORMATS = ${JSON.stringify(FORMATS)};
 const GALLERY = ${JSON.stringify(gallery)};
 /* 형식 미리보기 캐시. 내용이 그대로면 8종을 다시 그리지 않는다. */
 const miniCache = { sig: null, html: '' };
-/* 배치 격자는 components/mysc-proposal.mjs의 토큰에서 온다. 빌더와 같은 값이다. */
+/* 배치 격자는 components/base.mjs의 토큰에서 온다. 빌더와 같은 값이다. */
 const G = ${JSON.stringify(T.grid)};
 let slides = ${JSON.stringify(slides)};
 let cur = 0;

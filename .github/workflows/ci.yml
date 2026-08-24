@@ -30,3 +30,6 @@ jobs:
 
       - name: 스모크 테스트
         run: node tests/smoke.mjs
+
+      - name: 개인정보 보호 테스트
+        run: node tests/privacy.mjs
