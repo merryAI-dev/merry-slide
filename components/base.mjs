@@ -207,14 +207,17 @@ export function sectionDivider(pptx, { numeral, title, items = [] } = {}) {
     });
   }
   if (items.length) {
+    // 항목이 길어 줄이 늘면 세로 가운데 정렬 때문에 글이 위로 번져 제목을 덮는다.
+    // 상단 정렬로 고정하고 남는 아래 공간까지 높이를 확보한다.
     slide.addText(
       items.map((t, i) => ({
         text: `${i + 1}. ${t}`,
         options: { breakLine: i < items.length - 1 },
       })),
       {
-        x: 5.845, y: 1.713, w: 4.193, h: 0.963,
-        fontFace: T.font.family, fontSize: 19.6, color: T.color.white, margin: 0,
+        x: 5.845, y: 1.713, w: T.canvas.w - 5.845 - 0.5, h: T.canvas.h - 1.713 - 0.6,
+        fontFace: T.font.family, fontSize: 19.6, color: T.color.white,
+        valign: 'top', margin: 0,
       },
     );
   }
