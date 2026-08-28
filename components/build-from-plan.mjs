@@ -380,6 +380,18 @@ function twoColumn(pptx, slide, c, PT, CT, slideNo) {
   note(slide, c.note, L.bottom - L.noteH + 0.14);
 }
 
+/**
+ * 열 너비를 정한다. widths가 없으면 균등 분할이다.
+ * 글 길이가 크게 다른 표는 균등 분할이 공간을 낭비하고, 그만큼 행이 높아진다.
+ */
+function colWidths(widths, cols, tw) {
+  if (!Array.isArray(widths) || widths.length !== cols) {
+    return Array.from({ length: cols }, () => tw / cols);
+  }
+  const sum = widths.reduce((a, b) => a + Number(b || 0), 0) || 1;
+  return widths.map((w) => (Number(w || 0) / sum) * tw);
+}
+
 function tableSlide(pptx, slide, c, PT, CT, slideNo) {
   const t = c.table || { headers: [], rows: [] };
   const tw = L.full.w;
@@ -405,7 +417,7 @@ function tableSlide(pptx, slide, c, PT, CT, slideNo) {
 
   slide.addTable([head, ...body], {
     x: L.full.x, y: CT, w: tw,
-    colW: Array.from({ length: cols }, () => tw / cols),
+    colW: colWidths(t.widths, cols, tw),
     rowH: [headH, ...body.map(() => bodyH)],
     fontFace: T.font.family, fontSize: T.font.dense,
     border: { type: 'solid', color: 'D9D9D9', pt: 0.5 },

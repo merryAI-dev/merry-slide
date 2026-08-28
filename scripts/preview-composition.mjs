@@ -734,6 +734,10 @@ function renderSlide(s, i) {
     inner += pillDiv(c.pill, 'left:.649in;top:' + PT + 'in;width:' + tw + 'in') +
       '<div style="position:absolute;left:.649in;top:' + CT + 'in;width:' + tw + 'in;height:' + th + 'in">' +
         '<table style="height:100%">' +
+        (Array.isArray(t.widths) && t.widths.length === (t.headers || []).length
+          ? '<colgroup>' + t.widths.map(w =>
+              '<col style="width:' + (Number(w) / t.widths.reduce((a, b) => a + Number(b), 0) * 100) + '%">').join('') + '</colgroup>'
+          : '') +
         '<thead><tr>' + (t.headers || []).map(h => '<th>' + esc(h) + '</th>').join('') + '</tr></thead>' +
         '<tbody>' + (t.rows || []).map(r =>
           '<tr>' + r.map(x => '<td>' + esc(x) + '</td>').join('') + '</tr>').join('') + '</tbody>' +
@@ -745,7 +749,9 @@ function renderSlide(s, i) {
     const boxes = fl.map((b, k) =>
       (k ? '<span class="farrow">›</span>' : '') +
       '<div class="fbox"><b>' + esc(b.head) + '</b><p>' + lines(b.body) + '</p></div>').join('');
-    const sp = splitBody(CT, bandWanted(figuresOf(c)) ? G.natural.flow : G.natural.flowMax, !!c.note);
+    // 프리뷰는 이미지 자리를 항상 열어 두는 편집 화면이므로 자연 높이를 그대로 쓴다.
+    // 빌더는 --drop-empty-figures로 자리를 지울 때만 flowMax 상한을 적용한다.
+    const sp = splitBody(CT, G.natural.flow, !!c.note);
     const flowH = sp.h;
     inner += pillDiv(c.pill, 'left:.649in;top:' + PT + 'in;width:10.37in') +
       '<div class="flow" style="left:.649in;top:' + CT + 'in;width:10.37in;height:' + flowH + 'in">' + boxes + '</div>' +

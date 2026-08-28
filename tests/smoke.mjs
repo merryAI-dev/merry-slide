@@ -2,7 +2,7 @@
 /**
  * 스모크 테스트: 추출 → 브랜드 주입 → 빌드 → 검증을 한 번에 돌린다.
  *
- * "기본 브랜드와 다른 양식에서도 파이프라인이 도는가"를 검증한다. 기본과 정반대
+ * "MYSC와 다른 양식에서도 파이프라인이 도는가"를 검증한다. MYSC와 정반대
  * 성격(16:9, 그린 팔레트, 사이드바, footer 쪽수, 다른 폰트)의 레퍼런스를
  * 코드로 만들고, 추출기에 넣고, 그 결과로 실제 덱을 빌드한 뒤 OOXML을 열어
  * 캔버스·색·폰트가 주입됐는지 확인한다.
@@ -30,7 +30,7 @@ function check(name, ok, detail = '') {
   if (!ok) failed += 1;
 }
 
-/* ── 1. 기본 브랜드와 정반대 양식의 레퍼런스 3장을 만든다 ── */
+/* ── 1. MYSC와 정반대 양식의 레퍼런스 3장을 만든다 ── */
 const PptxGenJS = require('pptxgenjs');
 const GREEN = '1B5E20', LIME = '8BC34A';
 
@@ -81,7 +81,7 @@ check('표 헤더 검출', brand.table?.headFill === LIME, brand.table?.headFill
 
 /* 3. 브랜드 주입 (applyBrand가 T를 실제로 바꾸는지) */
 const { applyBrand } = await import(path.join(ROOT, 'components', 'brand.mjs'));
-const { T } = await import(path.join(ROOT, 'components', 'base.mjs'));
+const { T } = await import(path.join(ROOT, 'components', 'mysc-proposal.mjs'));
 applyBrand(brandFile);
 check('T.canvas 주입', T.canvas.w === 13.333 && T.canvas.h === 7.5, `${T.canvas.w}x${T.canvas.h}`);
 check('T.color 주입', T.color.navy === GREEN, T.color.navy);
@@ -123,7 +123,7 @@ print(json.dumps({
   'slides': len(slides),
   'cx': round(int(m.group(1))/914400, 3), 'cy': round(int(m.group(2))/914400, 3),
   'green': '${GREEN}' in s2, 'lime': '${LIME}' in s2,
-  'font': 'Noto Sans KR' in s2, 'base': '24344D' in s2,
+  'font': 'Noto Sans KR' in s2, 'mysc': '0C2044' in s2,
 }))
 `], { encoding: 'utf8' });
 const r = JSON.parse(probe);
@@ -132,7 +132,7 @@ check('덱 캔버스 16:9', r.cx === 13.333 && r.cy === 7.5, `${r.cx}x${r.cy}`);
 check('primary 그린 사용', r.green);
 check('표 헤더 라임 사용', r.lime);
 check('브랜드 폰트 사용', r.font);
-check('기본 색 잔존 없음', !r.base);
+check('MYSC 색 잔존 없음', !r.mysc);
 
 /* 6. 프리뷰 생성 + 생성물 스크립트 실행 검증 (pillDiv 사고의 교훈) */
 const prevOut = path.join(TMP, 'preview.html');
@@ -150,6 +150,27 @@ try {
   check('프리뷰 생성 + 스크립트 파싱', false, String(e.message).split('\n')[0]);
 }
 
-fs.rmSync(TMP, { recursive: true, force: true });
-console.log(failed ? `\n실패 ${failed}건\n` : '\n전부 통과\n');
-process.exit(failed ? 1 : 0);
+/* 7. 프리뷰가 빌더 전용 함수를 부르지 않는지 확인한다.
+ *
+ * 실제 사고: 전폭 도식 분기에서 빌더의 bandWanted·figuresOf를 호출했는데
+ * 프리뷰에는 그 함수가 없어 ReferenceError로 화면 전체가 멈췄다. 문법 검사와
+ * 파싱은 통과했고 그 형식을 열어 보기 전까지 드러나지 않았다.
+ *
+ * 프리뷰는 빌더에서 아무것도 import하지 않으므로, 빌더에만 있는 이름을
+ * 프리뷰가 부른다면 그 자체로 결함이다. */
+{
+  const names = (src) => new Set(
+    [...src.matchAll(/(?:^|\n)\s*(?:function\s+([A-Za-z_$][\w$]*)|const\s+([A-Za-z_$][\w$]*)\s*=\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>)/g)]
+      .map((m) => m[1] || m[2]).filter(Boolean));
+
+  const builderSrc = fs.readFileSync(path.join(ROOT, 'components', 'build-from-plan.mjs'), 'utf8');
+  const previewSrc = fs.readFileSync(path.join(ROOT, 'scripts', 'preview-composition.mjs'), 'utf8');
+  const builderOnly = [...names(builderSrc)].filter((n) => !names(previewSrc).has(n));
+
+  // 주석은 코드가 아니므로 지우고 검사한다.
+  const code = previewSrc.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+  const called = builderOnly.filter((n) => new RegExp(`[^\\w$.]${n}\\s*\\(`).test(code));
+
+  check('프리뷰가 빌더 전용 함수를 부르지 않음', called.length === 0,
+    called.length ? `호출됨: ${called.join(', ')}` : `빌더 전용 ${builderOnly.length}개 대조`);
+}
